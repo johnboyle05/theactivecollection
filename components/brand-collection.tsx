@@ -3,6 +3,7 @@
 import type { Brand } from "@/lib/brand-types";
 
 import { BrandCard } from "./brand-card";
+import Link from "next/link";
 
 type BrandCollectionProps = {
   title: string;
@@ -29,7 +30,9 @@ export function BrandCollection({
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {brands.map((brand) => (
             <li key={brand.id} className="h-full min-w-0">
-              <BrandCard brand={brand} />
+              <Link href={`/brands/${brand.slug}`} className="block h-full">
+                <BrandCard brand={brand} />
+              </Link>
             </li>
           ))}
         </ul>
