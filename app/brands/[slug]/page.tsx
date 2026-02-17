@@ -239,10 +239,13 @@ function buildMetaList(detail: BrandDetail["detail"]) {
     ["Genders", detail.genders],
     ["Size Range", detail.sizeRange],
     ["Country of Manufacture", detail.countryOfManufacture],
-  ].map(([label, value]) => ({
-    label: label ?? "Data missing:Label",
-    value: valueOrMissing(value, label),
-  }));
+  ].map(([label, value]) => {
+    const safeLabel = label ?? "Data missing:Label";
+    return {
+      label: safeLabel,
+      value: valueOrMissing(value, safeLabel),
+    };
+  });
 }
 
 function buildRecommended(images?: string[]) {
