@@ -240,7 +240,7 @@ function buildMetaList(detail: BrandDetail["detail"]) {
     ["Size Range", detail.sizeRange],
     ["Country of Manufacture", detail.countryOfManufacture],
   ].map(([label, value]) => ({
-    label,
+    label: label ?? "Data missing:Label",
     value: valueOrMissing(value, label),
   }));
 }
