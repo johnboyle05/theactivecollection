@@ -50,7 +50,7 @@ const FIELD_MAP = {
   brand: ["Brand", "Brand Name", "Name"],
   slug: ["Slug", "slug", "ID", "Id"],
   region: ["Region"],
-  shippingLocations: ["ShippingLocations", "Shipping Locations", "Ships To"],
+  shippingLocations: ["ShippingLocations", "Shipping Locations", "Ships To", "Shipping"],
   activities: ["Activities", "Activity"],
   genders: ["Genders", "Gender"],
   price: ["Price"],
@@ -126,7 +126,7 @@ export default async function BrandPage({ params }: PageProps) {
   return (
     <div className="bg-white text-[#1f1f1f]">
       {carouselImages.length > 0 ? (
-        <div className="mx-auto w-full max-w-6xl px-0 sm:px-5">
+        <div className="mx-auto w-full px-0 sm:px-2 sm:pt-2">
           <HeroCarousel images={carouselImages} altBase={detail.brand} />
         </div>
       ) : null}
@@ -139,7 +139,7 @@ export default async function BrandPage({ params }: PageProps) {
         image={heroImage}
       />
 
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-5 pb-16 pt-12 sm:px-8">
+      <main className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-5 pb-16 pt-1 sm:px-8">
         <DescriptionSection detail={detail} />
 
         <AtAGlancePanel items={atAGlance} />
@@ -294,33 +294,94 @@ function BrandHero({
   image?: string;
 }) {
   return (
-    <header className="relative mx-auto flex max-w-5xl flex-col gap-6 rounded-[18px] border border-[#e5e5e5] bg-[#f9f9f9] p-5 sm:p-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-[#1f1f1f] sm:text-4xl">{name}</h1>
+    <header className="relative mx-auto flex max-w-5xl flex-col gap-3 p-5 sm:px-8">
+      <div className="mt-4">
+        <h1 className="text-3xl font-medium text-[#383232] sm:text-4xl">{name}</h1>
         <p className="text-lg text-[#414141]">{tagline}</p>
       </div>
-      <div className="flex flex-wrap items-center gap-3 rounded border border-[#d7d7d7]/70 bg-white px-3 py-2">
+      <div className="flex flex-wrap items-center gap-1">
         {website ? (
-          <a
-            href={website}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded border border-[#d7d7d7] px-3 py-2 text-sm font-medium text-[#1f1f1f] hover:bg-[#f3f3f3]"
-          >
-            Website link
-          </a>
+          <div className="flex items-center rounded-full bg-[#F9F9F9] px-3 py-1.5">
+            <span className="web-icon flex h-6 w-6 items-center justify-center rounded-full bg-none text-[#1f1f1f]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-4 w-4"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M3.5 9h17" />
+                <path d="M3.5 15h17" />
+                <path d="M12 3c2 3 2 15 0 18" />
+              </svg>
+            </span>
+            <a
+              href={website}
+              target="_blank"
+              rel="noreferrer"
+              className="pr-3 pl-1 py-2 text-sm font-regular text-[#949292] inline-flex items-center gap-2"
+            >
+              {website}
+              <span className="mini-arrow inline-flex h-4 w-4 items-center justify-center text-[#949292]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  className="h-3.5 w-3.5"
+                  aria-hidden="true"
+                >
+                  <path d="M7 5l5 5-5 5" />
+                </svg>
+              </span>
+            </a>
+          </div>
         ) : (
           <span className="text-sm text-[#1f1f1f]">{`Data missing:Website`}</span>
         )}
         {instagram ? (
-          <a
-            href={instagram}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded border border-[#d7d7d7] px-3 py-2 text-sm font-medium text-[#1f1f1f] hover:bg-[#f3f3f3]"
-          >
-            Instagram link
-          </a>
+          <div className="flex items-center rounded-full bg-[#F9F9F9] px-3 py-1.5">
+            <span className="flex h-4 w-4 mr-1 items-center justify-centertext-[#1f1f1f]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-4 w-4"
+                aria-hidden="true"
+              >
+                <rect x="4" y="4" width="16" height="16" rx="4" ry="4" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="16.5" cy="7.5" r="0.9" fill="currentColor" stroke="none" />
+              </svg>
+            </span>
+            <a
+              href={formatInstagram(instagram)}
+              target="_blank"
+              rel="noreferrer"
+              className="pr-3 pl-1 py-2 text-sm font-regular text-[#949292] inline-flex items-center gap-2"
+            >
+              {instagram}
+              <span className="mini-arrow inline-flex h-4 w-4 items-center justify-center text-[#949292]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  className="h-3.5 w-3.5"
+                  aria-hidden="true"
+                >
+                  <path d="M7 5l5 5-5 5" />
+                </svg>
+              </span>
+            </a>
+          </div>
         ) : null}
       </div>
     </header>
@@ -330,8 +391,7 @@ function BrandHero({
 function DescriptionSection({ detail }: { detail: BrandDetail["detail"] }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-2xl font-semibold text-[#1f1f1f]">Blurb/Company description</h2>
-      <p className="text-base leading-relaxed text-[#3b3b3b]">
+      <p className="text-base leading-relaxed text-[#6A6262]">
         {valueOrMissing(detail.description, "Description")}
       </p>
     </section>
@@ -418,4 +478,13 @@ function JsonLd({ detail }: { detail: BrandDetail["detail"] }) {
       dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
     />
   );
+}
+
+function formatInstagram(handle: string) {
+  if (!handle) return handle;
+  if (handle.startsWith("http://") || handle.startsWith("https://")) {
+    return handle;
+  }
+  const sanitized = handle.replace(/^@/, "");
+  return `https://instagram.com/${sanitized}`;
 }

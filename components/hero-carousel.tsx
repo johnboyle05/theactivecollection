@@ -51,9 +51,12 @@ export function HeroCarousel({ images, altBase }: HeroCarouselProps) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-[#e5e5e5] bg-[#f6f6f6]">
+    <div className="relative overflow-hidden border border-[#e5e5e5] bg-[#f6f6f6] sm:rounded-[12px]">
       <div
-        className="relative aspect-[16/9] w-full touch-pan-y"
+        className="relative w-full touch-pan-y sm:h-[40vh]"
+        style={{
+          height: "60vh",
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
