@@ -455,7 +455,7 @@ function CuratorNote() {
       <h2 className="text-2xl font-semibold text-[#1f1f1f]">Why we love them</h2>
       <p className="mt-3 max-w-3xl text-base text-[#3b3b3b]">
         Thoughtful design, considered materials, and a commitment to movement-first comfort make
-        this brand stand out in our activewear lineup.
+        this brand stand out in our activewear lineup
       </p>
     </section>
   );
