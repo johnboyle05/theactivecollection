@@ -17,9 +17,11 @@ import { BrandCollection } from "./brand-collection";
 
 type HomeFeedProps = {
   brands: Brand[];
+  favouriteIds: string[];
+  onToggleFavourite: (brandId: string) => void;
 };
 
-export function HomeFeed({ brands }: HomeFeedProps) {
+export function HomeFeed({ brands, favouriteIds, onToggleFavourite }: HomeFeedProps) {
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(
     createEmptySelection,
   );
@@ -171,8 +173,8 @@ export function HomeFeed({ brands }: HomeFeedProps) {
 
   return (
     <div className="flex flex-col">
-      <div className="sticky -top-16 z-20 flex flex-col gap-4 bg-[#fbfbfb]/90 backdrop-blur pb-6 pt-6 pl-4 sm:pl-0">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+      <div className="sticky -top-0 z-20 flex flex-col gap-4 bg-[#fbfbfb]/90 backdrop-blur pt-2 pb-1 sm:pb-6 sm:pt-6 pl-4 sm:pl-0">
+        <div className="mb-1 sm:mb-2 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[#383232] text-4xl">Brand Filters</p>
           </div>
@@ -186,7 +188,7 @@ export function HomeFeed({ brands }: HomeFeedProps) {
             </button>
           ) : null}
         </div>
-        <div className="no-scrollbar flex flex-nowrap items-center gap-3 overflow-x-auto pb-1 sm:hidden">
+        <div className="no-scrollbar flex flex-nowrap items-center gap-3 overflow-x-auto py-1 sm:hidden">
           {FILTER_CATEGORIES.map((category) => {
             const activeCount = selectedFilters[category.id]?.length ?? 0;
             const hasSelection = activeCount > 0;
@@ -447,6 +449,8 @@ export function HomeFeed({ brands }: HomeFeedProps) {
         }
         brands={filteredBrands}
         emptyMessage="No brands match these filters yet. Try clearing a few selections."
+        favouriteIds={favouriteIds}
+        onToggleFavourite={onToggleFavourite}
       />
       {isApplyingFilters ? (
         <div className="pointer-events-none fixed inset-0 z-40 bg-white/40 transition-opacity duration-150 hidden sm:block" />

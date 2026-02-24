@@ -39,7 +39,15 @@ type BrandDetail = Brand & {
     sizeRange?: string;
     materials?: string;
     galleryImages?: string[];
+    recommendedProducts?: RecommendedProduct[];
   };
+};
+
+type RecommendedProduct = {
+  name: string;
+  link?: string;
+  imageUrl?: string;
+  ref?: string;
 };
 
 type PageProps = {
@@ -66,7 +74,18 @@ const FIELD_MAP = {
   sizeRange: ["SizeRange", "Sizes"],
   materials: ["Materials"],
   galleryImages: ["GalleryImages", "Gallery"],
+  recommendedProducts: ["RecommendedProducts", "Recommended Products"],
 } as const;
+
+const AT_A_GLANCE_ICONS: Record<string, { src: string; alt: string }> = {
+  Region: { src: "/images/Region.svg", alt: "Region" },
+  "Shipping Locations": { src: "/images/shipping.svg", alt: "Shipping" },
+  Price: { src: "/images/pricing.svg", alt: "Pricing" },
+  Activities: { src: "/images/Activity.svg", alt: "Activities" },
+  Genders: { src: "/images/Genders.svg", alt: "Genders" },
+  Values: { src: "/images/values.svg", alt: "Values" },
+  "Country of Manufacture": { src: "/images/manufacturing.svg", alt: "Manufacturing country" },
+};
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -115,7 +134,10 @@ export default async function BrandPage({ params }: PageProps) {
     heroBannerImages[0] ??
     (brand.assets.background ? `/${brand.assets.background}` : detail.galleryImages?.[0]);
   const atAGlance = buildMetaList(detail);
-  const recommended = buildRecommended(detail.galleryImages);
+  const recommendedProducts =
+    detail.recommendedProducts && detail.recommendedProducts.length > 0
+      ? detail.recommendedProducts
+      : buildRecommended(detail.galleryImages, detail.brand);
   const carouselImages =
     heroBannerImages.length > 0
       ? heroBannerImages
@@ -126,7 +148,7 @@ export default async function BrandPage({ params }: PageProps) {
   return (
     <div className="bg-white text-[#1f1f1f]">
       {carouselImages.length > 0 ? (
-        <div className="mx-auto w-full px-0 sm:px-2 sm:pt-2">
+        <div className="mx-auto w-full px-0 sm:px-3 sm:pt-3">
           <HeroCarousel images={carouselImages} altBase={detail.brand} />
         </div>
       ) : null}
@@ -139,12 +161,12 @@ export default async function BrandPage({ params }: PageProps) {
         image={heroImage}
       />
 
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-5 pb-16 pt-1 sm:px-8">
+      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 pb-16 pt-1 sm:px-8">
         <DescriptionSection detail={detail} />
 
         <AtAGlancePanel items={atAGlance} />
 
-        <RecommendedProducts images={recommended} name={detail.brand} />
+        <RecommendedProducts products={recommendedProducts} name={detail.brand} />
 
         <CuratorNote />
       </main>
@@ -190,11 +212,11 @@ function mapDetail(brand: Brand): BrandDetail["detail"] {
     activities: get(FIELD_MAP.activities),
     genders: get(FIELD_MAP.genders),
     price: get(FIELD_MAP.price),
-    values: get(FIELD_MAP.values),
-    featured: get(FIELD_MAP.featured),
-    tagline: get(FIELD_MAP.tagline) ?? brand.tagline,
-    description: get(FIELD_MAP.description),
-    website: get(FIELD_MAP.website),
+  values: get(FIELD_MAP.values),
+  featured: get(FIELD_MAP.featured),
+  tagline: get(FIELD_MAP.tagline) ?? brand.tagline,
+  description: get(FIELD_MAP.description),
+  website: get(FIELD_MAP.website),
     instagram: get(FIELD_MAP.instagram),
     yearFounded: get(FIELD_MAP.yearFounded),
     founder: get(FIELD_MAP.founder),
@@ -202,13 +224,21 @@ function mapDetail(brand: Brand): BrandDetail["detail"] {
     sizeRange: get(FIELD_MAP.sizeRange),
     materials: get(FIELD_MAP.materials),
     galleryImages: parseGallery(get(FIELD_MAP.galleryImages)),
+    recommendedProducts: parseRecommendedProducts(get(FIELD_MAP.recommendedProducts)),
   };
 }
 
 function pickFirst(record: Record<string, string>, keys: readonly string[]) {
+  const lowerKeyMap: Record<string, string> = {};
+  for (const [k, v] of Object.entries(record)) {
+    lowerKeyMap[k.toLowerCase()] = v;
+  }
+
   for (const key of keys) {
-    const val = record[key];
-    if (val && val.trim()) return val.trim();
+    const direct = record[key];
+    if (direct && direct.trim()) return direct.trim();
+    const ci = lowerKeyMap[key.toLowerCase()];
+    if (ci && ci.trim()) return ci.trim();
   }
   return undefined;
 }
@@ -219,6 +249,27 @@ function parseGallery(raw?: string) {
     .split(/[,\\n]/)
     .map((entry) => entry.trim())
     .filter(Boolean);
+}
+
+function parseRecommendedProducts(raw?: string): RecommendedProduct[] {
+  if (!raw) return [];
+  return raw
+    .split(/[;\n]+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((chunk) => {
+      const parts = chunk.includes("|")
+        ? chunk.split("|")
+        : chunk.split(",");
+      const [name, link, imageUrl, ref] = parts.map((part) => part.trim());
+      return {
+        name: name ?? "",
+        link: link || undefined,
+        imageUrl: imageUrl || undefined,
+        ref: ref || undefined,
+      };
+    })
+    .filter((item) => item.name);
 }
 
 function getFirstMissingRequired(detail: BrandDetail["detail"]) {
@@ -237,22 +288,49 @@ function buildMetaList(detail: BrandDetail["detail"]) {
     ["Price", detail.price],
     ["Activities", detail.activities],
     ["Genders", detail.genders],
-    ["Size Range", detail.sizeRange],
+    ["Values", detail.values],
     ["Country of Manufacture", detail.countryOfManufacture],
   ].map(([label, value]) => {
     const safeLabel = label ?? "Data missing:Label";
+    const icon = AT_A_GLANCE_ICONS[safeLabel];
     return {
       label: safeLabel,
       value: valueOrMissing(value, safeLabel),
+      iconSrc: icon?.src,
+      iconAlt: icon?.alt,
     };
   });
 }
 
-function buildRecommended(images?: string[]) {
+function buildRecommended(images: string[] | undefined, brandName: string): RecommendedProduct[] {
   if (!images || images.length === 0) {
-    return [];
+    return getDefaultRecommendedProducts(brandName);
   }
-  return images.slice(0, 3);
+  return images.slice(0, 3).map((url, idx) => ({
+    name: `${brandName} product ${idx + 1}`,
+    imageUrl: url,
+    link: undefined,
+    ref: undefined,
+  }));
+}
+
+function getDefaultRecommendedProducts(brandName: string): RecommendedProduct[] {
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1528701800489-20be9e0f0bba?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1521572160153-f5c1b001e2e9?auto=format&fit=crop&w=800&q=80",
+  ];
+  const fallbackLinks = [
+    "https://example.com/product-1",
+    "https://example.com/product-2",
+    "https://example.com/product-3",
+  ];
+  return fallbackImages.map((imageUrl, idx) => ({
+    name: `${brandName} pick ${idx + 1}`,
+    imageUrl,
+    link: fallbackLinks[idx],
+    ref: `demo-${idx + 1}`,
+  }));
 }
 
 function findHeroBanners(slug: string) {
@@ -398,18 +476,33 @@ function DescriptionSection({ detail }: { detail: BrandDetail["detail"] }) {
   );
 }
 
-function AtAGlancePanel({ items }: { items: { label: string; value: string }[] }) {
+function AtAGlancePanel({
+  items,
+}: {
+  items: { label: string; value: string; iconSrc?: string; iconAlt?: string }[];
+}) {
   return (
     <section className="space-y-4">
-      <h2 className="text-2xl font-semibold text-[#1f1f1f]">At a glance</h2>
-      <div className="rounded-2xl border border-[#dcdcdc] bg-white p-6">
-        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="rounded-2xl bg-[#F9F9F9] pt-1 sm:pt-2 pb-6 sm:pb-8 px-0 sm:px-2">
+        <h2 className="text-xl font-medium text-[#262626] m-6 mb-2">At a glance</h2>
+        <dl className="grid grid-cols-1 sm:grid-cols-2">
           {items.map((item) => (
-            <div key={item.label} className="flex flex-col gap-1">
-              <dt className="text-sm text-[#5a5a5a]">{item.label}</dt>
-              <dd className="text-base font-medium text-[#1f1f1f]">
-                {item.value}
-              </dd>
+            <div key={item.label} className="flex items-center gap-3 rounded-xl px-4 pt-3">
+              {item.iconSrc ? (
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#ededed] bg-[#ffffff]/30">
+                  <Image
+                    src={item.iconSrc}
+                    alt={item.iconAlt ?? item.label}
+                    width={28}
+                    height={28}
+                    className="object-contain"
+                  />
+                </div>
+              ) : null}
+              <div className="flex flex-col justify-center">
+                <dt className="text-sm text-[#777676]">{item.label}</dt>
+                <dd className="text-base font-medium text-[#4C4C4C]">{item.value}</dd>
+              </div>
             </div>
           ))}
         </dl>
@@ -418,32 +511,50 @@ function AtAGlancePanel({ items }: { items: { label: string; value: string }[] }
   );
 }
 
-function RecommendedProducts({ images, name }: { images: string[]; name: string }) {
+function RecommendedProducts({
+  products,
+  name,
+}: {
+  products: RecommendedProduct[];
+  name: string;
+}) {
+  const productsToRender = products.length > 0 ? products : getDefaultRecommendedProducts(name);
+
   return (
     <section className="space-y-4">
       <h2 className="text-2xl font-semibold text-[#1f1f1f]">Recommended products</h2>
-      <div className="flex flex-wrap gap-4">
-        {images.length === 0
-          ? [0, 1, 2].map((idx) => (
-              <div
-                key={idx}
-                className="h-28 w-28 rounded-[10px] border border-[#e2e2e2] bg-[#f7f7f7]"
-              />
-            ))
-          : images.map((src, idx) => (
-              <div
-                key={src + idx}
-                className="relative h-28 w-28 overflow-hidden rounded-[10px] border border-[#e2e2e2] bg-[#f7f7f7]"
-              >
+      <div className="flex gap-4 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible">
+        {productsToRender.map((product, idx) => {
+          const card = (
+            <div className="flex w-60 flex-col gap-2 hover:opacity-90">
+              <div className="relative h-60 w-60 overflow-hidden rounded-[10px] border border-[#e2e2e2] bg-[#f7f7f7]">
                 <Image
-                  src={src}
-                  alt={`${name} product ${idx + 1}`}
+                  src={product.imageUrl ?? "/brand-assets/images/placeholder.png"}
+                  alt={product.name || `${name} product ${idx + 1}`}
                   fill
                   sizes="140px"
                   className="object-cover"
                 />
               </div>
-            ))}
+              {product.name ? (
+                <p className="truncate text-md font-regular text-[#949292]">{product.name}</p>
+              ) : null}
+            </div>
+          );
+          return product.link ? (
+            <a
+              key={(product.ref ?? product.name) + idx}
+              href={product.link}
+              target="_blank"
+              rel="noreferrer"
+              className="block"
+            >
+              {card}
+            </a>
+          ) : (
+            <div key={(product.ref ?? product.name) + idx}>{card}</div>
+          );
+        })}
       </div>
     </section>
   );
@@ -451,12 +562,22 @@ function RecommendedProducts({ images, name }: { images: string[]; name: string 
 
 function CuratorNote() {
   return (
-    <section className="rounded-2xl border border-[#dcdcdc] bg-white px-6 py-8 sm:px-10 sm:py-12">
-      <h2 className="text-2xl font-semibold text-[#1f1f1f]">Why we love them</h2>
-      <p className="mt-3 max-w-3xl text-base text-[#3b3b3b]">
-        Thoughtful design, considered materials, and a commitment to movement-first comfort make
-        this brand stand out in our activewear lineup
-      </p>
+    <section
+      className="relative overflow-hidden rounded-2xl border border-[#dcdcdc] px-4 py-4 sm:px-8 sm:py-8"
+      style={{
+        backgroundImage: "url('/images/why-we-love-them.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" aria-hidden="true" />
+      <div className="relative px-4 py-6 sm:py-2">
+        <h2 className="text-2xl font-medium text-white">Why we love them</h2>
+        <p className="mt-1 max-w-3xl text-base text-[#d9d9d9]">
+          Thoughtful design, considered materials, and a commitment to movement-first comfort make
+          this brand stand out in our activewear lineup.
+        </p>
+      </div>
     </section>
   );
 }
