@@ -33,7 +33,7 @@ export function BrandCard({ brand, isFavourite = false, onToggleFavourite }: Bra
   }, [isFavourite]);
 
   return (
-    <article className="brand-card flex h-full flex-col rounded-3xl border border-[#F2F2F2] bg-white p-2">
+    <article className="brand-card flex h-full flex-col rounded-3xl border border-[#F2F2F2] bg-white p-2 hover:opacity-90 cursor-pointer">
       <div className="card-top relative h-64 sm:h-72 overflow-hidden rounded-[18px] bg-gradient-to-br from-zinc-200 to-zinc-300">
         <img
           src={`/${assets.background ?? "brand-assets/images/placeholder.png"}`}

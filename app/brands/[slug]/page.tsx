@@ -32,14 +32,15 @@ type BrandDetail = Brand & {
     tagline?: string;
     description?: string;
     website?: string;
-    instagram?: string;
-    yearFounded?: string;
-    founder?: string;
-    countryOfManufacture?: string;
-    sizeRange?: string;
-    materials?: string;
-    galleryImages?: string[];
-    recommendedProducts?: RecommendedProduct[];
+  instagram?: string;
+  yearFounded?: string;
+  founder?: string;
+  countryOfManufacture?: string;
+  sizeRange?: string;
+  materials?: string;
+  galleryImages?: string[];
+  recommendedProducts?: RecommendedProduct[];
+  whyWeLove?: string;
   };
 };
 
@@ -66,6 +67,7 @@ const FIELD_MAP = {
   featured: ["Featured"],
   tagline: ["Tagline", "Summary", "Tag Line"],
   description: ["Description", "About"],
+  whyWeLove: ["Why we love them", "WhyWeLove", "Why We Love"],
   website: ["Website", "Site"],
   instagram: ["Instagram", "Instagram URL"],
   yearFounded: ["YearFounded", "Year Founded", "Founded"],
@@ -168,7 +170,7 @@ export default async function BrandPage({ params }: PageProps) {
 
         <RecommendedProducts products={recommendedProducts} name={detail.brand} />
 
-        <CuratorNote />
+        <CuratorNote copy={detail.whyWeLove} />
       </main>
 
       <JsonLd detail={detail} />
@@ -225,6 +227,7 @@ function mapDetail(brand: Brand): BrandDetail["detail"] {
     materials: get(FIELD_MAP.materials),
     galleryImages: parseGallery(get(FIELD_MAP.galleryImages)),
     recommendedProducts: parseRecommendedProducts(get(FIELD_MAP.recommendedProducts)),
+    whyWeLove: get(FIELD_MAP.whyWeLove),
   };
 }
 
@@ -522,7 +525,7 @@ function RecommendedProducts({
 
   return (
     <section className="space-y-4">
-      <h2 className="text-2xl font-semibold text-[#1f1f1f]">Recommended products</h2>
+      <h2 className="text-xl font-medium text-[#383232]">Recommended products</h2>
       <div className="flex gap-4 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible">
         {productsToRender.map((product, idx) => {
           const card = (
@@ -560,7 +563,7 @@ function RecommendedProducts({
   );
 }
 
-function CuratorNote() {
+function CuratorNote({ copy }: { copy?: string }) {
   return (
     <section
       className="relative overflow-hidden rounded-2xl border border-[#dcdcdc] px-4 py-4 sm:px-8 sm:py-8"
@@ -570,12 +573,13 @@ function CuratorNote() {
         backgroundPosition: "center",
       }}
     >
-      <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/16 backdrop-blur-[1px]" aria-hidden="true" />
       <div className="relative px-4 py-6 sm:py-2">
         <h2 className="text-2xl font-medium text-white">Why we love them</h2>
-        <p className="mt-1 max-w-3xl text-base text-[#d9d9d9]">
-          Thoughtful design, considered materials, and a commitment to movement-first comfort make
-          this brand stand out in our activewear lineup.
+        <p className="mt-1 max-w-3xl text-base text-[#f1f1f1]">
+          {copy && copy.trim().length > 0
+            ? copy
+            : "Thoughtful design, considered materials, and a commitment to movement-first comfort make this brand stand out in our activewear lineup."}
         </p>
       </div>
     </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import type { Brand } from "@/lib/brand-types";
 import { HomeFeed } from "./home-feed";
 
@@ -34,6 +35,28 @@ function HeartIcon({ filled = false }: { filled?: boolean }) {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      className="h-4.5 w-4.5 text-[#ababab]"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M5 6l1 14h12l1-14" />
+    </svg>
+  );
+}
+
 function FavouritesList({
   brands,
   onClose,
@@ -58,28 +81,33 @@ function FavouritesList({
             const shipping = brand.columns["Ships To"] ?? brand.columns["Shipping"] ?? "";
             return (
               <li key={brand.id} className="flex items-center gap-3 py-3">
-                <div className="h-14 w-14 flex-none overflow-hidden rounded-xl bg-zinc-100">
-                  <img
-                    src={`/${brand.assets.background ?? "brand-assets/images/placeholder.png"}`}
-                    alt=""
-                    className="h-full w-full object-cover"
-                    onError={(event) => {
-                      event.currentTarget.src = "/brand-assets/images/placeholder.png";
-                    }}
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[#2d2d2d]">{brand.name}</p>
-                  <p className="truncate text-xs text-[#6f6f6f]">Price: {price || "TBD"}</p>
-                  <p className="truncate text-xs text-[#6f6f6f]">Shipping: {shipping || "TBD"}</p>
-                </div>
+                <Link
+                  href={`/brands/${brand.slug}`}
+                  className="flex min-w-0 flex-1 items-center gap-3"
+                >
+                  <div className="h-14 w-14 flex-none overflow-hidden rounded-xl bg-zinc-100">
+                    <img
+                      src={`/${brand.assets.background ?? "brand-assets/images/placeholder.png"}`}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      onError={(event) => {
+                        event.currentTarget.src = "/brand-assets/images/placeholder.png";
+                      }}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-[#2d2d2d]">{brand.name}</p>
+                    <p className="truncate text-xs text-[#6f6f6f]">Price: {price || "TBD"}</p>
+                    <p className="truncate text-xs text-[#6f6f6f]">Shipping: {shipping || "TBD"}</p>
+                  </div>
+                </Link>
                 <button
                   type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white text-[#e63946] shadow-sm transition hover:border-zinc-300"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-100 bg-white text-[#6b7280] transition hover:border-zinc-300 hover:text-[#ef4444]"
                   aria-label={`Remove ${brand.name} from favourites`}
                   onClick={() => onToggleFavourite(brand.id)}
                 >
-                  <HeartIcon filled />
+                  <TrashIcon />
                 </button>
               </li>
             );
@@ -100,27 +128,23 @@ function FavouritesList({
 }
 
 export function HomeShell({ brands }: { brands: Brand[] }) {
-  const [favouriteIds, setFavouriteIds] = useState<string[]>([]);
+  const [favouriteIds, setFavouriteIds] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const parsed = stored ? JSON.parse(stored) : null;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [isFavouritesOpen, setIsFavouritesOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setFavouriteIds(parsed);
-        }
-      }
-    } catch (error) {
-      console.warn("Failed to read favourites from storage", error);
-    }
-  }, []);
+  const mobileSheetRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     try {
@@ -135,7 +159,9 @@ export function HomeShell({ brands }: { brands: Brand[] }) {
     const handleClick = (event: MouseEvent | TouchEvent) => {
       const target = event.target as Node;
       const clickedFaves =
-        popoverRef.current?.contains(target) || buttonRef.current?.contains(target);
+        popoverRef.current?.contains(target) ||
+        buttonRef.current?.contains(target) ||
+        mobileSheetRef.current?.contains(target);
       const clickedMenu = mobileMenuRef.current?.contains(target);
       if (!clickedFaves && isFavouritesOpen) {
         setIsFavouritesOpen(false);
@@ -182,6 +208,18 @@ export function HomeShell({ brands }: { brands: Brand[] }) {
     const timeout = setTimeout(() => setIsPopping(false), 320);
     return () => clearTimeout(timeout);
   }, [favouriteCount]);
+
+  useEffect(() => {
+    if (!isFavouritesOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.touchAction = previousTouchAction;
+    };
+  }, [isFavouritesOpen]);
 
   return (
     <div className="min-h-screen bg-[#fbfbfb] font-sans text-zinc-900">
@@ -277,11 +315,11 @@ export function HomeShell({ brands }: { brands: Brand[] }) {
             <div
               id="favourites-panel"
               ref={popoverRef}
-              className="absolute right-0 top-[calc(100%+12px)] hidden w-96 max-w-[90vw] rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl sm:block"
+              className="absolute right-0 top-[calc(100%+12px)] hidden w-96 max-w-[90vw] rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl sm:block max-h-[80vh] overflow-y-auto"
             >
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-base font-semibold text-[#262626]">Favourites</p>
+                  <p className="text-lg font-medium text-[#262626]">Favourites</p>
                   {favouriteCount > 0 ? (
                     <span className="text-xs text-[#8f8f8f]">{favouriteCount} brand(s)</span>
                   ) : null}
@@ -289,7 +327,7 @@ export function HomeShell({ brands }: { brands: Brand[] }) {
                 <button
                   type="button"
                   aria-label="Close favourites"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white text-lg text-[#7a7a7a] transition hover:border-zinc-300 hover:text-[#2d2d2d]"
+                  className="flex h-9 w-9 px-4 pb-4 pt-3 items-center justify-center rounded-full border border-zinc-200 bg-white text-lg text-[#7a7a7a] transition hover:border-zinc-300 hover:text-[#2d2d2d]"
                   onClick={() => setIsFavouritesOpen(false)}
                 >
                   ×
@@ -304,7 +342,7 @@ export function HomeShell({ brands }: { brands: Brand[] }) {
               {favouriteCount > 0 ? (
                 <button
                   type="button"
-                  className="mt-3 inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-[#2d2d2d] transition hover:border-zinc-300"
+                  className="mt-3 underline inline-flex w-full items-center justify-center px-4 py-2 text-sm font-regular text-[#6D6C6C] transition hover:border-zinc-300"
                   onClick={() => {
                     clearFavourites();
                     setIsFavouritesOpen(false);
@@ -355,31 +393,48 @@ export function HomeShell({ brands }: { brands: Brand[] }) {
       </header>
 
       {isFavouritesOpen ? (
-        <div
-          className="fixed inset-0 z-30 flex items-end pb-0 pt-16 sm:hidden"
-          onClick={() => setIsFavouritesOpen(false)}
-        >
-          <div className="absolute inset-0 bg-black/40" />
+        <div className="fixed inset-0 z-30 flex items-end pb-0 pt-16 sm:hidden">
           <div
-            className="relative z-10 flex w-full flex-col rounded-t-[28px] border border-t border-zinc-200 bg-white p-5 shadow-[0_-20px_60px_rgba(0,0,0,0.12)]"
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setIsFavouritesOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="relative z-10 flex w-full max-h-[90vh] flex-col overflow-hidden rounded-t-[28px] border border-t border-zinc-200 bg-white p-5 shadow-[0_-20px_60px_rgba(0,0,0,0.12)]"
+            ref={mobileSheetRef}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
               <p className="text-xl font-semibold text-[#262626]">Favourites</p>
               <button
                 type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f6f6f6] text-2xl font-semibold text-[#9D9D9D]"
+                className="flex h-10 w-10 pb-1 items-center justify-center rounded-full bg-[#f6f6f6] text-2xl font-semibold text-[#9D9D9D]"
                 aria-label="Close favourites"
                 onClick={() => setIsFavouritesOpen(false)}
               >
                 ×
               </button>
             </div>
-            <FavouritesList
-              brands={favouriteBrands}
-              onClose={() => setIsFavouritesOpen(false)}
-              onToggleFavourite={toggleFavourite}
-            />
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <FavouritesList
+                brands={favouriteBrands}
+                onClose={() => setIsFavouritesOpen(false)}
+                onToggleFavourite={toggleFavourite}
+                showCloseButton={false}
+              />
+            </div>
+            {favouriteCount > 0 ? (
+              <button
+                type="button"
+                className="mt-3 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-[#2d2d2d] transition hover:border-zinc-300"
+                onClick={() => {
+                  clearFavourites();
+                  setIsFavouritesOpen(false);
+                }}
+              >
+                Remove all favourites
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}

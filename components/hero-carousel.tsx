@@ -55,7 +55,7 @@ export function HeroCarousel({ images, altBase }: HeroCarouselProps) {
       <div
         className="relative w-full touch-pan-y sm:h-[40vh]"
         style={{
-          height: "60vh",
+          height: "65vh",
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
