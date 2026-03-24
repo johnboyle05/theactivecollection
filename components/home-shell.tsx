@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import type { Brand } from "@/lib/brand-types";
 import { HomeFeed } from "./home-feed";
 
@@ -227,19 +228,30 @@ export function HomeShell({ brands }: { brands: Brand[] }) {
         <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-8 sm:py-4">
           {/* Mobile left logo */ }
           <div className="flex items-center gap-3 sm:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold uppercase text-white">
-              AC
-            </div>
+            <Image
+              src="/images/tac-logo-mobile.png"
+              alt="The Active Collection"
+              width={220}
+              height={60}
+              className="h-auto w-[100px] max-w-[100px]"
+              sizes="100px"
+              quality={100}
+              priority
+            />
           </div>
 
           {/* Desktop brand lockup */ }
-          <div className="hidden items-center gap-2 sm:flex">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold uppercase text-white">
-              AC
-            </div>
-            <span className="text-sm font-semibold tracking-tight text-zinc-800">
-              Active Collection
-            </span>
+          <div className="hidden items-center sm:flex">
+            <Image
+              src="/images/tac-logo.png"
+              alt="The Active Collection"
+              width={220}
+              height={60}
+              className="w-[220px] h-auto"
+              sizes="220px"
+              quality={100}
+              priority
+            />
           </div>
 
           {/* Desktop links + favourites */ }
