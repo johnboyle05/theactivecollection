@@ -178,15 +178,6 @@ export function HomeFeed({ brands, favouriteIds, onToggleFavourite }: HomeFeedPr
           <div>
             <p className="text-[#383232] text-4xl">Brand Filters</p>
           </div>
-          {appliedCount > 0 ? (
-            <button
-              type="button"
-              className="hidden text-sm font-medium text-zinc-600 underline-offset-4 hover:text-zinc-900 hover:underline sm:inline-flex"
-              onClick={clearAll}
-            >
-              Clear all
-            </button>
-          ) : null}
         </div>
         <div className="no-scrollbar flex flex-nowrap items-center gap-3 overflow-x-auto py-1 sm:hidden">
           {FILTER_CATEGORIES.map((category) => {
