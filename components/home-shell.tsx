@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Brand } from "@/lib/brand-types";
@@ -453,11 +453,13 @@ export function HomeShell({ brands }: { brands: Brand[] }) {
 
       <main className="content mx-auto flex w-full max-w-6xl flex-col gap-10 py-12 sm:px-8">
         <section id="filters">
-          <HomeFeed
-            brands={brands}
-            favouriteIds={favouriteIds}
-            onToggleFavourite={toggleFavourite}
-          />
+          <Suspense>
+            <HomeFeed
+              brands={brands}
+              favouriteIds={favouriteIds}
+              onToggleFavourite={toggleFavourite}
+            />
+          </Suspense>
         </section>
       </main>
 
