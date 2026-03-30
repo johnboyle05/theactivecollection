@@ -139,10 +139,17 @@ export default async function BrandPage({ params }: PageProps) {
   const hasRecommendedProducts =
     (detail.recommendedProducts && detail.recommendedProducts.length > 0) ||
     (detail.galleryImages && detail.galleryImages.length > 0);
-  const recommendedProducts =
+  const recommendedProducts = (
     detail.recommendedProducts && detail.recommendedProducts.length > 0
       ? detail.recommendedProducts
-      : buildRecommended(detail.galleryImages, detail.brand);
+      : buildRecommended(detail.galleryImages, detail.brand)
+  ).map((p) => ({
+    ...p,
+    imageUrl:
+      p.imageUrl && !p.imageUrl.startsWith("http") && !p.imageUrl.startsWith("/")
+        ? `/brand-assets/brand-page-level/recommended-products/${detail.slug}/${p.imageUrl}`
+        : p.imageUrl,
+  }));
   const carouselImages =
     heroBannerImages.length > 0
       ? heroBannerImages
