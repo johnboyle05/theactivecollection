@@ -136,6 +136,9 @@ export default async function BrandPage({ params }: PageProps) {
     heroBannerImages[0] ??
     (brand.assets.background ? `/${brand.assets.background}` : detail.galleryImages?.[0]);
   const atAGlance = buildMetaList(detail);
+  const hasRecommendedProducts =
+    (detail.recommendedProducts && detail.recommendedProducts.length > 0) ||
+    (detail.galleryImages && detail.galleryImages.length > 0);
   const recommendedProducts =
     detail.recommendedProducts && detail.recommendedProducts.length > 0
       ? detail.recommendedProducts
@@ -168,7 +171,9 @@ export default async function BrandPage({ params }: PageProps) {
 
         <AtAGlancePanel items={atAGlance} />
 
-        <RecommendedProducts products={recommendedProducts} name={detail.brand} />
+        {hasRecommendedProducts ? (
+          <RecommendedProducts products={recommendedProducts} name={detail.brand} />
+        ) : null}
 
         <CuratorNote copy={detail.whyWeLove} />
       </main>
@@ -492,7 +497,7 @@ function AtAGlancePanel({
           {items.map((item) => (
             <div key={item.label} className="flex items-center gap-3 rounded-xl px-4 pt-3">
               {item.iconSrc ? (
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#ededed] bg-[#ffffff]/30">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#ededed] bg-[#ffffff]/30">
                   <Image
                     src={item.iconSrc}
                     alt={item.iconAlt ?? item.label}
@@ -502,7 +507,7 @@ function AtAGlancePanel({
                   />
                 </div>
               ) : null}
-              <div className="flex flex-col justify-center">
+              <div className="flex min-w-0 flex-col justify-center">
                 <dt className="text-sm text-[#777676]">{item.label}</dt>
                 <dd className="text-base font-medium text-[#4C4C4C]">{item.value}</dd>
               </div>

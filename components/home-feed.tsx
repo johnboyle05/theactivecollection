@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type React from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import type { Brand } from "@/lib/brand-types";
 import {
@@ -22,9 +23,20 @@ type HomeFeedProps = {
 };
 
 export function HomeFeed({ brands, favouriteIds, onToggleFavourite }: HomeFeedProps) {
-  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(
-    createEmptySelection,
-  );
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(() => {
+    const initial = createEmptySelection();
+    for (const category of FILTER_CATEGORIES) {
+      const values = searchParams.getAll(category.id);
+      if (values.length > 0) {
+        initial[category.id] = values;
+      }
+    }
+    return initial;
+  });
   const [appliedFilters, setAppliedFilters] = useState<SelectedFilters>(
     createEmptySelection,
   );
@@ -72,12 +84,23 @@ export function HomeFeed({ brands, favouriteIds, onToggleFavourite }: HomeFeedPr
       setAppliedFilters(selectedFilters);
       return;
     }
+
+    const params = new URLSearchParams();
+    for (const category of FILTER_CATEGORIES) {
+      for (const value of selectedFilters[category.id] ?? []) {
+        params.append(category.id, value);
+      }
+    }
+    const search = params.toString();
+    router.replace(search ? `${pathname}?${search}` : pathname, { scroll: false });
+
     setIsApplyingFilters(true);
     const timeout = setTimeout(() => {
       setAppliedFilters(selectedFilters);
       setIsApplyingFilters(false);
     }, 500);
     return () => clearTimeout(timeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFilters]);
 
   const clearCategory = (categoryId: FilterId) => {
