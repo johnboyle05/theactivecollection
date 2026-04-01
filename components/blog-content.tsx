@@ -121,15 +121,20 @@ export function BlogContent() {
       </div>
 
       {/* ── Featured: mobile — plain horizontal scroll ── */}
-      <div
-        className="no-scrollbar flex gap-3 overflow-x-auto pl-5 pb-8 sm:hidden"
-        style={{ height: `${FEATURED_HEIGHT * 0.75}px` }}
-      >
-        {featured.map((article) => (
-          <div key={article.slug + article.title} className="h-full w-[78vw] flex-none last:pr-5">
-            <FeaturedCard article={article} />
-          </div>
-        ))}
+      <div className="w-full bg-[#7a6e68] sm:hidden">
+        <div className="mx-auto max-w-6xl px-5 pt-6 sm:px-8">
+          <h2 className="mb-4 text-lg font-medium text-white/80">Featured</h2>
+        </div>
+        <div
+          className="no-scrollbar flex gap-3 overflow-x-auto pl-5 pb-8"
+          style={{ height: `${FEATURED_HEIGHT * 0.75}px` }}
+        >
+          {featured.map((article) => (
+            <div key={article.slug + article.title} className="h-full w-[78vw] flex-none last:pr-5">
+              <FeaturedCard article={article} />
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── Featured: desktop — scroll-jacking wrapper ── */}
@@ -140,14 +145,22 @@ export function BlogContent() {
       >
         {/* Sticky panel — sticks 20px below the nav */}
         <div
-          className="sticky overflow-hidden"
+          className="sticky overflow-hidden bg-[#7a6e68]"
           style={{ top: `${STICKY_TOP}px`, height: `${FEATURED_HEIGHT}px` }}
         >
+          {/* Featured label */}
+          <div
+            className="pt-6 pb-4"
+            style={{ paddingLeft: "max(20px, calc((100vw - 72rem) / 2 + 20px))" }}
+          >
+            <h2 className="text-lg font-medium text-white/80">Featured</h2>
+          </div>
           {/* Track — left-aligned to page margin, overflows right */}
           <div
             ref={trackRef}
-            className="flex h-full gap-3"
+            className="flex gap-3 pb-6"
             style={{
+              height: `${FEATURED_HEIGHT - 64}px`,
               willChange: "transform",
               paddingLeft: "max(20px, calc((100vw - 72rem) / 2 + 20px))",
             }}
