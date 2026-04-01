@@ -110,9 +110,6 @@ export function BlogContent() {
 
       {/* Page header — matches max-w-6xl / px-5 sm:px-8 */}
       <div className="mx-auto max-w-6xl px-5 pb-10 pt-16 sm:px-8">
-        <p className="mb-3 text-sm font-medium uppercase tracking-widest text-[#949292]">
-          The Active Collection
-        </p>
         <h1 className="mb-4 text-5xl font-medium text-[#262626]">Journal</h1>
         <p className="max-w-xl text-lg text-[#6D6C6C]">
           Brand comparisons, honest reviews, and guides to help you find the gear that suits how
@@ -121,7 +118,7 @@ export function BlogContent() {
       </div>
 
       {/* ── Featured: mobile — plain horizontal scroll ── */}
-      <div className="w-full bg-[#7a6e68] sm:hidden">
+      <div className="w-full bg-[#f4f4f4] sm:hidden">
         <div className="mx-auto max-w-6xl px-5 pt-6 sm:px-8">
           <h2 className="mb-4 text-lg font-medium text-white/80">Featured</h2>
         </div>
@@ -145,7 +142,7 @@ export function BlogContent() {
       >
         {/* Sticky panel — sticks 20px below the nav */}
         <div
-          className="sticky overflow-hidden bg-[#7a6e68]"
+          className="sticky overflow-hidden bg-[#f4f4f4]"
           style={{ top: `${STICKY_TOP}px`, height: `${FEATURED_HEIGHT}px` }}
         >
           {/* Featured label */}
