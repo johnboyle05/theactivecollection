@@ -4,7 +4,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ARTICLES, type Article } from "@/lib/blog-articles";
 
-const FEATURED_HEIGHT = 500; // px, desktop featured section height
+const FEATURED_HEIGHT = 500; // px — height of the sticky featured panel
+const STICKY_TOP = 112;      // nav height (~92px) + 20px gap
 const CATEGORIES = ["All", "Brand Reviews", "Roundups", "Comparisons"];
 
 const CATEGORY_MAP: Record<string, string> = {
@@ -19,7 +20,7 @@ function categoryMatch(articleCategory: string, filter: string) {
 }
 
 function FeaturedCard({ article }: { article: Article }) {
-  const content = (
+  const inner = (
     <div className={`relative h-full w-full overflow-hidden rounded-2xl bg-gradient-to-br ${article.gradient}`}>
       <div className="absolute inset-0 bg-black/25" />
       <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6">
@@ -36,18 +37,18 @@ function FeaturedCard({ article }: { article: Article }) {
     </div>
   );
 
-  if (article.slug === "#") return <div className="h-full w-full">{content}</div>;
+  if (article.slug === "#") return <div className="h-full w-full">{inner}</div>;
   return (
     <Link href={`/blog/${article.slug}`} className="block h-full w-full transition-opacity hover:opacity-90">
-      {content}
+      {inner}
     </Link>
   );
 }
 
 function AllArticleCard({ article }: { article: Article }) {
-  const content = (
+  const inner = (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-[#F2F2F2] bg-white transition-colors hover:border-zinc-300">
-      <div className={`h-44 bg-gradient-to-br ${article.gradient} relative flex-none`}>
+      <div className={`relative h-44 flex-none bg-gradient-to-br ${article.gradient}`}>
         <div className="absolute inset-0 bg-black/10" />
       </div>
       <div className="flex flex-col gap-2 p-5">
@@ -63,8 +64,8 @@ function AllArticleCard({ article }: { article: Article }) {
     </div>
   );
 
-  if (article.slug === "#") return content;
-  return <Link href={`/blog/${article.slug}`}>{content}</Link>;
+  if (article.slug === "#") return inner;
+  return <Link href={`/blog/${article.slug}`}>{inner}</Link>;
 }
 
 export function BlogContent() {
@@ -77,7 +78,7 @@ export function BlogContent() {
   const featured = ARTICLES.filter((a) => a.featured).slice(0, 5);
   const filteredArticles = ARTICLES.filter((a) => categoryMatch(a.category, activeFilter));
 
-  // Measure track overflow — useLayoutEffect to avoid visible layout shift
+  // Measure horizontal overflow of the track
   useLayoutEffect(() => {
     const measure = () => {
       if (!trackRef.current) return;
@@ -90,12 +91,13 @@ export function BlogContent() {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  // Scroll-jacking: vertical scroll drives horizontal translate (desktop only)
+  // Scroll-jacking: vertical scroll → horizontal translate (desktop only)
+  // Starts once the sticky panel reaches STICKY_TOP from the viewport top
   useEffect(() => {
     const onScroll = () => {
       if (!wrapperRef.current || !trackRef.current || window.innerWidth < 768) return;
       const wrapperTop = wrapperRef.current.getBoundingClientRect().top;
-      const progress = Math.max(0, -wrapperTop);
+      const progress = Math.max(0, STICKY_TOP - wrapperTop);
       const ratio = Math.min(1, progress / Math.max(1, maxTranslateRef.current));
       trackRef.current.style.transform = `translateX(-${ratio * maxTranslateRef.current}px)`;
     };
@@ -106,8 +108,8 @@ export function BlogContent() {
   return (
     <div className="min-h-screen bg-[#fbfbfb]">
 
-      {/* Page header */}
-      <div className="mx-auto max-w-5xl px-5 pb-10 pt-16 sm:px-8">
+      {/* Page header — matches max-w-6xl / px-5 sm:px-8 */}
+      <div className="mx-auto max-w-6xl px-5 pb-10 pt-16 sm:px-8">
         <p className="mb-3 text-sm font-medium uppercase tracking-widest text-[#949292]">
           The Active Collection
         </p>
@@ -118,45 +120,46 @@ export function BlogContent() {
         </p>
       </div>
 
-      {/* ── Featured: mobile horizontal scroll ── */}
+      {/* ── Featured: mobile — plain horizontal scroll ── */}
       <div
-        className="no-scrollbar flex gap-3 overflow-x-auto px-5 pb-8 sm:hidden"
+        className="no-scrollbar flex gap-3 overflow-x-auto pl-5 pb-8 sm:hidden"
         style={{ height: `${FEATURED_HEIGHT * 0.75}px` }}
       >
         {featured.map((article) => (
-          <div key={article.slug + article.title} className="h-full w-[78vw] flex-none">
+          <div key={article.slug + article.title} className="h-full w-[78vw] flex-none last:pr-5">
             <FeaturedCard article={article} />
           </div>
         ))}
       </div>
 
-      {/* ── Featured: desktop scroll-jacking ── */}
+      {/* ── Featured: desktop — scroll-jacking wrapper ── */}
       <div
         ref={wrapperRef}
         className="hidden sm:block"
         style={{ height: `${wrapperHeight}px` }}
       >
-        {/* Sticky container — sits flush under the nav (z-30) */}
+        {/* Sticky panel — sticks 20px below the nav */}
         <div
-          className="sticky top-0 overflow-hidden"
-          style={{ height: `${FEATURED_HEIGHT}px` }}
+          className="sticky overflow-hidden"
+          style={{ top: `${STICKY_TOP}px`, height: `${FEATURED_HEIGHT}px` }}
         >
-          {/* Horizontally scrolling track */}
+          {/* Track — left-aligned to page margin, overflows right */}
           <div
             ref={trackRef}
-            className="flex h-full gap-3 px-5 sm:px-8"
+            className="flex h-full gap-3 pl-5 sm:pl-8"
+            style={{ willChange: "transform" }}
           >
             {/* Large card */}
-            <div className="h-full w-[55vw] min-w-[300px] flex-none">
+            <div className="h-full w-[55vw] min-w-[280px] flex-none">
               <FeaturedCard article={featured[0]} />
             </div>
             {/* Column 1 */}
-            <div className="flex h-full w-[30vw] min-w-[200px] flex-none flex-col gap-3">
+            <div className="flex h-full w-[28vw] min-w-[200px] flex-none flex-col gap-3">
               <div className="flex-1"><FeaturedCard article={featured[1]} /></div>
               <div className="flex-1"><FeaturedCard article={featured[2]} /></div>
             </div>
             {/* Column 2 */}
-            <div className="flex h-full w-[30vw] min-w-[200px] flex-none flex-col gap-3">
+            <div className="flex h-full w-[28vw] min-w-[200px] flex-none flex-col gap-3 pr-8">
               <div className="flex-1"><FeaturedCard article={featured[3]} /></div>
               <div className="flex-1"><FeaturedCard article={featured[4]} /></div>
             </div>
@@ -164,8 +167,8 @@ export function BlogContent() {
         </div>
       </div>
 
-      {/* ── All articles ── */}
-      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+      {/* ── All articles — flows directly after wrapper, no extra gap ── */}
+      <div className="mx-auto max-w-6xl px-5 pt-12 pb-16 sm:px-8">
         <h2 className="mb-6 text-2xl font-medium text-[#262626]">All articles</h2>
 
         {/* Filter pills */}
@@ -186,13 +189,14 @@ export function BlogContent() {
           ))}
         </div>
 
-        {/* Articles grid */}
+        {/* Grid */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filteredArticles.map((article) => (
             <AllArticleCard key={article.slug + article.title} article={article} />
           ))}
         </div>
       </div>
+
     </div>
   );
 }
