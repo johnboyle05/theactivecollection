@@ -146,8 +146,11 @@ export function BlogContent() {
           {/* Track — left-aligned to page margin, overflows right */}
           <div
             ref={trackRef}
-            className="flex h-full gap-3 pl-5 sm:pl-8"
-            style={{ willChange: "transform" }}
+            className="flex h-full gap-3"
+            style={{
+              willChange: "transform",
+              paddingLeft: "max(20px, calc((100vw - 72rem) / 2 + 20px))",
+            }}
           >
             {/* Large card */}
             <div className="h-full w-[55vw] min-w-[280px] flex-none">
