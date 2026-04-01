@@ -153,11 +153,11 @@ export function BlogContent() {
             }}
           >
             {/* Large card */}
-            <div className="h-full w-[560px] flex-none">
+            <div className="h-full w-[680px] flex-none">
               <FeaturedCard article={featured[0]} />
             </div>
             {/* Column 1 */}
-            <div className="flex h-full w-[300px] flex-none flex-col gap-3">
+            <div className="flex h-full w-[360px] flex-none flex-col gap-3">
               <div className="flex-1"><FeaturedCard article={featured[1]} /></div>
               <div className="flex-1"><FeaturedCard article={featured[2]} /></div>
             </div>
