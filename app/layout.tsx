@@ -5,6 +5,7 @@ import { FavouritesProvider } from "@/components/favourites-provider";
 import { SiteNav } from "@/components/site-nav";
 import { getBrands } from "@/lib/brands";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,13 @@ export default async function RootLayout({
           {children}
         </FavouritesProvider>
         <Analytics />
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-HCGQYF9W00" strategy="afterInteractive" />
+        <Script id="ga4-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-HCGQYF9W00');
+        `}</Script>
       </body>
     </html>
   );
