@@ -1,0 +1,198 @@
+"use client";
+
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ARTICLES, type Article } from "@/lib/blog-articles";
+
+const FEATURED_HEIGHT = 500; // px, desktop featured section height
+const CATEGORIES = ["All", "Brand Reviews", "Roundups", "Comparisons"];
+
+const CATEGORY_MAP: Record<string, string> = {
+  "Brand Reviews": "Brand Review",
+  Roundups: "Roundup",
+  Comparisons: "Comparison",
+};
+
+function categoryMatch(articleCategory: string, filter: string) {
+  if (filter === "All") return true;
+  return articleCategory === (CATEGORY_MAP[filter] ?? filter);
+}
+
+function FeaturedCard({ article }: { article: Article }) {
+  const content = (
+    <div className={`relative h-full w-full overflow-hidden rounded-2xl bg-gradient-to-br ${article.gradient}`}>
+      <div className="absolute inset-0 bg-black/25" />
+      <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6">
+        <span className="mb-2 text-xs font-medium uppercase tracking-widest text-white/60">
+          {article.category}
+        </span>
+        <h3 className="text-lg font-medium leading-snug text-white sm:text-xl">
+          {article.title}
+        </h3>
+        <p className="mt-2 text-xs text-white/50">
+          {article.date} · {article.readTime}
+        </p>
+      </div>
+    </div>
+  );
+
+  if (article.slug === "#") return <div className="h-full w-full">{content}</div>;
+  return (
+    <Link href={`/blog/${article.slug}`} className="block h-full w-full transition-opacity hover:opacity-90">
+      {content}
+    </Link>
+  );
+}
+
+function AllArticleCard({ article }: { article: Article }) {
+  const content = (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-[#F2F2F2] bg-white transition-colors hover:border-zinc-300">
+      <div className={`h-44 bg-gradient-to-br ${article.gradient} relative flex-none`}>
+        <div className="absolute inset-0 bg-black/10" />
+      </div>
+      <div className="flex flex-col gap-2 p-5">
+        <span className="text-xs font-medium uppercase tracking-widest text-[#949292]">
+          {article.category}
+        </span>
+        <h3 className="text-base font-medium leading-snug text-[#262626]">{article.title}</h3>
+        <p className="line-clamp-2 text-sm leading-relaxed text-[#6D6C6C]">{article.excerpt}</p>
+        <p className="mt-1 text-xs text-[#949292]">
+          {article.date} · {article.readTime}
+        </p>
+      </div>
+    </div>
+  );
+
+  if (article.slug === "#") return content;
+  return <Link href={`/blog/${article.slug}`}>{content}</Link>;
+}
+
+export function BlogContent() {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const maxTranslateRef = useRef(0);
+  const [wrapperHeight, setWrapperHeight] = useState(FEATURED_HEIGHT);
+  const [activeFilter, setActiveFilter] = useState("All");
+
+  const featured = ARTICLES.filter((a) => a.featured).slice(0, 5);
+  const filteredArticles = ARTICLES.filter((a) => categoryMatch(a.category, activeFilter));
+
+  // Measure track overflow — useLayoutEffect to avoid visible layout shift
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (!trackRef.current) return;
+      const overflow = Math.max(0, trackRef.current.scrollWidth - trackRef.current.clientWidth);
+      maxTranslateRef.current = overflow;
+      setWrapperHeight(FEATURED_HEIGHT + overflow);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
+  // Scroll-jacking: vertical scroll drives horizontal translate (desktop only)
+  useEffect(() => {
+    const onScroll = () => {
+      if (!wrapperRef.current || !trackRef.current || window.innerWidth < 768) return;
+      const wrapperTop = wrapperRef.current.getBoundingClientRect().top;
+      const progress = Math.max(0, -wrapperTop);
+      const ratio = Math.min(1, progress / Math.max(1, maxTranslateRef.current));
+      trackRef.current.style.transform = `translateX(-${ratio * maxTranslateRef.current}px)`;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#fbfbfb]">
+
+      {/* Page header */}
+      <div className="mx-auto max-w-5xl px-5 pb-10 pt-16 sm:px-8">
+        <p className="mb-3 text-sm font-medium uppercase tracking-widest text-[#949292]">
+          The Active Collection
+        </p>
+        <h1 className="mb-4 text-5xl font-medium text-[#262626]">Journal</h1>
+        <p className="max-w-xl text-lg text-[#6D6C6C]">
+          Brand comparisons, honest reviews, and guides to help you find the gear that suits how
+          you actually train.
+        </p>
+      </div>
+
+      {/* ── Featured: mobile horizontal scroll ── */}
+      <div
+        className="no-scrollbar flex gap-3 overflow-x-auto px-5 pb-8 sm:hidden"
+        style={{ height: `${FEATURED_HEIGHT * 0.75}px` }}
+      >
+        {featured.map((article) => (
+          <div key={article.slug + article.title} className="h-full w-[78vw] flex-none">
+            <FeaturedCard article={article} />
+          </div>
+        ))}
+      </div>
+
+      {/* ── Featured: desktop scroll-jacking ── */}
+      <div
+        ref={wrapperRef}
+        className="hidden sm:block"
+        style={{ height: `${wrapperHeight}px` }}
+      >
+        {/* Sticky container — sits flush under the nav (z-30) */}
+        <div
+          className="sticky top-0 overflow-hidden"
+          style={{ height: `${FEATURED_HEIGHT}px` }}
+        >
+          {/* Horizontally scrolling track */}
+          <div
+            ref={trackRef}
+            className="flex h-full gap-3 px-5 sm:px-8"
+          >
+            {/* Large card */}
+            <div className="h-full w-[55vw] min-w-[300px] flex-none">
+              <FeaturedCard article={featured[0]} />
+            </div>
+            {/* Column 1 */}
+            <div className="flex h-full w-[30vw] min-w-[200px] flex-none flex-col gap-3">
+              <div className="flex-1"><FeaturedCard article={featured[1]} /></div>
+              <div className="flex-1"><FeaturedCard article={featured[2]} /></div>
+            </div>
+            {/* Column 2 */}
+            <div className="flex h-full w-[30vw] min-w-[200px] flex-none flex-col gap-3">
+              <div className="flex-1"><FeaturedCard article={featured[3]} /></div>
+              <div className="flex-1"><FeaturedCard article={featured[4]} /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── All articles ── */}
+      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+        <h2 className="mb-6 text-2xl font-medium text-[#262626]">All articles</h2>
+
+        {/* Filter pills */}
+        <div className="no-scrollbar mb-8 flex gap-2 overflow-x-auto pb-1">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveFilter(cat)}
+              className={`flex-none rounded-full border px-4 py-2 text-sm transition-colors ${
+                activeFilter === cat
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-[#E3E3E3] bg-white text-[#6A6262] hover:border-zinc-300"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Articles grid */}
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredArticles.map((article) => (
+            <AllArticleCard key={article.slug + article.title} article={article} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
