@@ -162,7 +162,7 @@ export function BlogContent() {
               <div className="flex-1"><FeaturedCard article={featured[2]} /></div>
             </div>
             {/* Column 2 */}
-            <div className="flex h-full w-[300px] flex-none flex-col gap-3 pr-8">
+            <div className="flex h-full w-[390px] flex-none flex-col gap-3 pr-8">
               <div className="flex-1"><FeaturedCard article={featured[3]} /></div>
               <div className="flex-1"><FeaturedCard article={featured[4]} /></div>
             </div>
