@@ -21,7 +21,7 @@ function categoryMatch(articleCategory: string, filter: string) {
 
 function FeaturedCard({ article }: { article: Article }) {
   const inner = (
-    <div className={`relative h-full w-full overflow-hidden rounded-md bg-gradient-to-br ${article.gradient}`}>
+    <div className={`relative h-full w-full overflow-hidden rounded-2xl bg-gradient-to-br ${article.gradient}`}>
       <div className="absolute inset-0 bg-black/25" />
       <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6">
         <span className="mb-2 text-xs font-medium uppercase tracking-widest text-white/60">
@@ -47,7 +47,7 @@ function FeaturedCard({ article }: { article: Article }) {
 
 function AllArticleCard({ article }: { article: Article }) {
   const inner = (
-    <div className="flex flex-col overflow-hidden rounded-md border border-[#F2F2F2] bg-white transition-colors hover:border-zinc-300">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-[#F2F2F2] bg-white transition-colors hover:border-zinc-300">
       <div className={`relative h-44 flex-none bg-gradient-to-br ${article.gradient}`}>
         <div className="absolute inset-0 bg-black/10" />
       </div>
@@ -108,33 +108,31 @@ export function BlogContent() {
   return (
     <div className="min-h-screen bg-[#fbfbfb]">
 
-      {/* ── Full-width featured background wrapper ── */}
-      <div className="w-full bg-[#f0f0f0]">
-
-        {/* Page header — matches max-w-6xl / px-5 sm:px-8 */}
-        <div className="mx-auto max-w-6xl px-5 pb-10 pt-16 sm:px-8">
-          <h1 className="mb-4 text-5xl font-medium text-[#262626]">Journal</h1>
-          <p className="max-w-xl text-lg text-[#6D6C6C]">
-            Brand comparisons, honest reviews, and guides to help you find the gear that suits how
-            you actually train.
-          </p>
-        </div>
-
-        {/* ── Featured: mobile — plain horizontal scroll ── */}
-        <div
-          className="no-scrollbar flex gap-3 overflow-x-auto pl-5 pb-8 sm:hidden"
-          style={{ height: `${FEATURED_HEIGHT * 0.75}px` }}
-        >
-          {featured.map((article) => (
-            <div key={article.slug + article.title} className="h-full w-[78vw] flex-none last:pr-5">
-              <FeaturedCard article={article} />
-            </div>
-          ))}
-        </div>
-
+      {/* Page header — matches max-w-6xl / px-5 sm:px-8 */}
+      <div className="mx-auto max-w-6xl px-5 pb-10 pt-16 sm:px-8">
+        <p className="mb-3 text-sm font-medium uppercase tracking-widest text-[#949292]">
+          The Active Collection
+        </p>
+        <h1 className="mb-4 text-5xl font-medium text-[#262626]">Journal</h1>
+        <p className="max-w-xl text-lg text-[#6D6C6C]">
+          Brand comparisons, honest reviews, and guides to help you find the gear that suits how
+          you actually train.
+        </p>
       </div>
 
-      {/* ── Featured: desktop — scroll-jacking wrapper (outside bg div so sticky works correctly) ── */}
+      {/* ── Featured: mobile — plain horizontal scroll ── */}
+      <div
+        className="no-scrollbar flex gap-3 overflow-x-auto pl-5 pb-8 sm:hidden"
+        style={{ height: `${FEATURED_HEIGHT * 0.75}px` }}
+      >
+        {featured.map((article) => (
+          <div key={article.slug + article.title} className="h-full w-[78vw] flex-none last:pr-5">
+            <FeaturedCard article={article} />
+          </div>
+        ))}
+      </div>
+
+      {/* ── Featured: desktop — scroll-jacking wrapper ── */}
       <div
         ref={wrapperRef}
         className="hidden sm:block"
@@ -142,7 +140,7 @@ export function BlogContent() {
       >
         {/* Sticky panel — sticks 20px below the nav */}
         <div
-          className="sticky overflow-hidden bg-[#f0f0f0]"
+          className="sticky overflow-hidden"
           style={{ top: `${STICKY_TOP}px`, height: `${FEATURED_HEIGHT}px` }}
         >
           {/* Track — left-aligned to page margin, overflows right */}
