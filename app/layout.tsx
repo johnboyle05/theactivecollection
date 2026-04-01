@@ -4,6 +4,7 @@ import "./globals.css";
 import { FavouritesProvider } from "@/components/favourites-provider";
 import { SiteNav } from "@/components/site-nav";
 import { getBrands } from "@/lib/brands";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default async function RootLayout({
           <SiteNav brands={brands} />
           {children}
         </FavouritesProvider>
+        <Analytics />
       </body>
     </html>
   );
