@@ -18,8 +18,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Move Beyond Mainstream",
-  description: "Emerging activewear brands curated for performance, comfort, and modern everyday style.",
+  title: "The Active Collection — Move Beyond Mainstream",
+  description: "Emerging activewear brands curated for performance, comfort, and modern everyday style. Discover the best gym wear, running gear, and athleisure brands.",
+  openGraph: {
+    title: "The Active Collection — Move Beyond Mainstream",
+    description: "Emerging activewear brands curated for performance, comfort, and modern everyday style.",
+    type: "website",
+    url: "https://theactivecollection.co",
+    siteName: "The Active Collection",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Active Collection — Move Beyond Mainstream",
+    description: "Emerging activewear brands curated for performance, comfort, and modern everyday style.",
+  },
 };
 
 export default async function RootLayout({

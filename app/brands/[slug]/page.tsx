@@ -97,23 +97,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   const { detail } = brand;
   const titleBase = detail.brand || slug;
-  const description = detail.tagline ?? detail.description ?? `Data missing:Description`;
+  const title = `${titleBase} — Activewear Review | The Active Collection`;
+  const description =
+    detail.description ?? detail.tagline ?? `Discover ${titleBase} on The Active Collection — curated activewear brands for performance and everyday style.`;
   const image = detail.galleryImages?.[0];
 
   return {
-    title: `${titleBase} | The Active Collection`,
+    title,
     description,
     openGraph: {
-      title: `${titleBase} | The Active Collection`,
+      title,
       description,
+      type: "website",
+      siteName: "The Active Collection",
       images: image
-        ? [
-            {
-              url: image,
-              alt: `${titleBase} hero image`,
-            },
-          ]
+        ? [{ url: image, alt: `${titleBase} activewear` }]
         : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
     },
   };
 }
@@ -605,8 +610,18 @@ function JsonLd({ detail }: { detail: BrandDetail["detail"] }) {
     name: detail.brand,
     url: detail.website ?? undefined,
     description: detail.description ?? detail.tagline,
-    sameAs: detail.instagram ? [detail.instagram] : undefined,
-    brand: detail.brand,
+    sameAs: [
+      detail.instagram,
+      detail.website,
+    ].filter(Boolean),
+    foundingDate: detail.yearFounded ?? undefined,
+    founder: detail.founder ? { "@type": "Person", name: detail.founder } : undefined,
+    logo: detail.slug
+      ? {
+          "@type": "ImageObject",
+          url: `https://theactivecollection.co/brand-assets/icons/${detail.slug}.png`,
+        }
+      : undefined,
   };
 
   return (
