@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ARTICLES, type Article } from "@/lib/blog-articles";
 
-const FEATURED_HEIGHT = 500; // px — height of the sticky featured panel
+const FEATURED_HEIGHT = 540; // px — height of the sticky featured panel
 const STICKY_TOP = 112;      // nav height (~92px) + 20px gap
 const CATEGORIES = ["All", "Brand Reviews", "Roundups", "Comparisons"];
 
@@ -21,18 +21,20 @@ function categoryMatch(articleCategory: string, filter: string) {
 
 function FeaturedCard({ article }: { article: Article }) {
   const inner = (
-    <div className={`relative h-full w-full overflow-hidden rounded-2xl bg-gradient-to-br ${article.gradient}`}>
-      <div className="absolute inset-0 bg-black/25" />
-      <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6">
-        <span className="mb-2 text-xs font-medium uppercase tracking-widest text-white/60">
-          {article.category}
-        </span>
-        <h3 className="text-lg font-medium leading-snug text-white sm:text-xl">
-          {article.title}
-        </h3>
-        <p className="mt-2 text-xs text-white/50">
-          {article.date} · {article.readTime}
-        </p>
+    <div
+      className={`relative h-full w-full overflow-hidden ${article.imageUrl ? "" : `bg-gradient-to-br ${article.gradient}`}`}
+      style={article.imageUrl ? { backgroundImage: `url(${article.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+    >
+      <div className="absolute inset-0 bg-black/20" />
+      <div className="absolute inset-x-0 bottom-0">
+        <div className="bg-white/50 backdrop-blur-md p-4">
+          <h3 className="text-base font-medium leading-snug text-[#383232] sm:text-lg">
+            {article.title}
+          </h3>
+          <p className="mt-1.5 text-xs text-[#383232]/50">
+            {article.date} · {article.readTime}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -47,7 +49,7 @@ function FeaturedCard({ article }: { article: Article }) {
 
 function AllArticleCard({ article }: { article: Article }) {
   const inner = (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-[#F2F2F2] bg-white transition-colors hover:border-zinc-300">
+    <div className="flex flex-col overflow-hidden border border-[#F2F2F2] bg-white transition-colors hover:border-zinc-300">
       <div className={`relative h-44 flex-none bg-gradient-to-br ${article.gradient}`}>
         <div className="absolute inset-0 bg-black/10" />
       </div>
@@ -120,7 +122,7 @@ export function BlogContent() {
       {/* ── Featured: mobile — plain horizontal scroll ── */}
       <div className="w-full bg-[#f4f4f4] sm:hidden">
         <div className="mx-auto max-w-6xl px-5 pt-6 sm:px-8">
-          <h2 className="mb-4 text-lg font-medium text-white/80">Featured</h2>
+          <h2 className="mb-4 text-lg font-medium text-[#383232]">Featured</h2>
         </div>
         <div
           className="no-scrollbar flex gap-3 overflow-x-auto pl-5 pb-8"
@@ -150,7 +152,7 @@ export function BlogContent() {
             className="pt-6 pb-4"
             style={{ paddingLeft: "max(20px, calc((100vw - 72rem) / 2 + 20px))" }}
           >
-            <h2 className="text-lg font-medium text-white/80">Featured</h2>
+            <h2 className="text-2xl font-medium text-[#383232]">Featured</h2>
           </div>
           {/* Track — left-aligned to page margin, overflows right */}
           <div

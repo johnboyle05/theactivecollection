@@ -7,6 +7,7 @@ export type Article = {
   readTime: string;
   gradient: string;
   featured: boolean;
+  imageUrl?: string;
 };
 
 export const ARTICLES: Article[] = [
@@ -20,6 +21,7 @@ export const ARTICLES: Article[] = [
     readTime: "6 min read",
     gradient: "from-zinc-700 to-zinc-900",
     featured: true,
+    imageUrl: "https://images.unsplash.com/photo-1668260948546-e5ba33085688?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     slug: "best-mens-activewear-brands",
@@ -120,6 +122,26 @@ export const ARTICLES: Article[] = [
     date: "Apr 2025",
     readTime: "6 min read",
     gradient: "from-zinc-400 to-zinc-600",
+    featured: false,
+  },
+  {
+    slug: "best-mens-training-pants",
+    category: "Roundup",
+    title: "The Best Men's Training Pants Right Now",
+    excerpt: "Fit, fabric, and versatility. Seven picks across every price point — from budget entry to technically ambitious.",
+    date: "Apr 2025",
+    readTime: "7 min read",
+    gradient: "from-stone-700 to-zinc-900",
+    featured: false,
+  },
+  {
+    slug: "best-mens-workout-shorts",
+    category: "Roundup",
+    title: "The Best Men's Workout Shorts Right Now",
+    excerpt: "From CrossFit to casual Saturdays — the shorts that hold up when your training does.",
+    date: "Apr 2025",
+    readTime: "7 min read",
+    gradient: "from-zinc-600 to-stone-800",
     featured: false,
   },
 ];
